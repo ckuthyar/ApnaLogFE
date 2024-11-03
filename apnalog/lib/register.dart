@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:apnalog/home.dart';
 import 'package:flutter/material.dart';
 
@@ -20,19 +22,47 @@ class FillForm extends StatefulWidget {
   State<FillForm> createState() => _FillFormState();
 }
 
-class _FillFormState extends State<FillForm> {
+class _FillFormState extends State<FillForm> with SingleTickerProviderStateMixin{
 
   final TextEditingController _email = TextEditingController();
   final TextEditingController _name = TextEditingController();
   final TextEditingController _phone = TextEditingController();
 
-  final _formKey = GlobalKey<FormState>();
+  @override
+  void dispose() {
+    _email.dispose();
+    _name.dispose();
+    _phone.dispose();
+    super.dispose();
+  }
+  late AnimationController animcontrol;
+  late var animation;
+  @override
+  void initState() {
+    super.initState();
+    animcontrol = AnimationController(vsync: this,duration: Duration(milliseconds: 500));
+    animation = Tween<double>(begin: 1.0,end: 1.1).animate(
+        CurvedAnimation(parent: animcontrol, curve: Curves.bounceInOut)
+    )..addStatusListener((status){
+      if(status==AnimationStatus.completed){
+        animcontrol.reverse();
+      }
+      else if(status==AnimationStatus.dismissed){
+        animcontrol.forward();
+      }
+    }
+    );
+
+    animcontrol.forward();
+  }
+
+  final _formKey1 = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: Center(
           child: Form(
-              key: _formKey,
+              key: _formKey1,
               child: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -84,14 +114,17 @@ class _FillFormState extends State<FillForm> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(onPressed: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const Home()));
-                      },style: const ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(Colors.black87),
-                        shadowColor: WidgetStatePropertyAll(Colors.black),
-                        elevation: WidgetStatePropertyAll(8),
-                        foregroundColor: WidgetStatePropertyAll(Colors.amber),
-                      ), child: const Text("Register",style: TextStyle(fontSize: 20),),
+                      child: ScaleTransition(
+                        scale: animation,
+                        child: ElevatedButton(onPressed: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>const Home()));
+                        },style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(Colors.black87),
+                            shadowColor: WidgetStatePropertyAll(Colors.black),
+                            elevation: WidgetStatePropertyAll(8),
+                            fixedSize: WidgetStatePropertyAll(Size(200,30)),
+                            foregroundColor: WidgetStatePropertyAll(Colors.amber)), child: const Text("Register",style: TextStyle(fontSize: 20),),
+                        ),
                       ),
                     ),
                   ],
